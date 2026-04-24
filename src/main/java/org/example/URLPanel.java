@@ -2,45 +2,46 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class URLPanel extends JPanel {
-    private final JTextField repoField;
-    private final JButton okButton;
-    private final JTextField selectedFileField;
+/**
+ * @author babaldeep and yaniel
+ */
+
+public class URLPanel extends JPanel implements ActionListener {
+
+    private JTextField urlField;
+    private JButton okButton;
+    private JTextField selectedFileField;
 
     public URLPanel() {
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        this.setLayout(new BorderLayout());
 
-        JPanel topRow = new JPanel(new BorderLayout(10, 10));
-        repoField = new JTextField();
+        JPanel topPanel = new JPanel(new BorderLayout());
+        urlField = new JTextField();
         okButton = new JButton("OK");
 
-        topRow.add(repoField, BorderLayout.CENTER);
-        topRow.add(okButton, BorderLayout.EAST);
+        topPanel.add(urlField, BorderLayout.CENTER);
+        topPanel.add(okButton, BorderLayout.EAST);
 
-        JPanel bottomRow = new JPanel(new BorderLayout(10, 10));
-        JLabel selectedLabel = new JLabel("Selected File Name");
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        JLabel label = new JLabel("Selected File Name");
         selectedFileField = new JTextField();
-        selectedFileField.setEditable(false);
 
-        bottomRow.add(selectedLabel, BorderLayout.NORTH);
-        bottomRow.add(selectedFileField, BorderLayout.CENTER);
+        bottomPanel.add(label, BorderLayout.NORTH);
+        bottomPanel.add(selectedFileField, BorderLayout.CENTER);
 
-        add(topRow, BorderLayout.NORTH);
-        add(bottomRow, BorderLayout.SOUTH);
+        this.add(topPanel, BorderLayout.NORTH);
+        this.add(bottomPanel, BorderLayout.SOUTH);
 
-        okButton.addActionListener(e -> {
-            String path = repoField.getText().trim();
-            Blackboard.getInstance().setRepoPath(path);
+        okButton.addActionListener(this);
+    }
 
-            Worker worker = new Worker();
-            Thread thread = new Thread(worker);
-            thread.start();
-        });
-
-        Timer timer = new Timer(200, e ->
-                selectedFileField.setText(Blackboard.getInstance().getSelectedFileName()));
-        timer.start();
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String url = urlField.getText();
+        Blackboard.getInstance().setRepoURL(url);
+        System.out.println("URL: " + url);
     }
 }
