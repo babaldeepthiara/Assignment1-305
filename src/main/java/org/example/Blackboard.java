@@ -3,23 +3,30 @@ package org.example;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Singleton shared state that holds the repository URL, loaded file list, selected 
+ * file name, a reference to the GridPanel, and a list of RepoLoadedListeners.
+ *
+ * @author babaldeep and yaneli
+ */
+
 public class Blackboard {
-    private static Blackboard instance;
+
+    private static final Blackboard instance = new Blackboard();
 
     private String repoPath;
     private String selectedFileName;
     private List<SourceFileInfo> files;
     private GridPanel gridPanel;
+    private final List<RepoLoadedListener> listeners;
 
     private Blackboard() {
         files = new ArrayList<>();
         selectedFileName = "";
+        listeners = new ArrayList<>();
     }
 
     public static Blackboard getInstance() {
-        if (instance == null) {
-            instance = new Blackboard();
-        }
         return instance;
     }
 
@@ -53,5 +60,15 @@ public class Blackboard {
 
     public void setGridPanel(GridPanel gridPanel) {
         this.gridPanel = gridPanel;
+    }
+
+    public void addRepoLoadedListener(RepoLoadedListener listener) {
+        listeners.add(listener);
+    }
+
+    public void notifyRepoLoaded() {
+        for (RepoLoadedListener listener : listeners) {
+            listener.onRepoLoaded();
+        }
     }
 }

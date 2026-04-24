@@ -1,5 +1,12 @@
 package org.example;
 
+/**
+ * Represents metadata for a single source file retrieved from a GitHub repository.
+ * Acts as a plain data container with no logic or UI concerns.
+ *
+ * @author babaldeep and yaneli
+ */
+
 public class SourceFileInfo {
     private final String fileName;
     private final String filePath;

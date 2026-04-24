@@ -6,7 +6,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * @author babaldeep and yaniel
+ * Panel that allows the user to input a repository URL and displays the selected file name.
+ * On clicking OK, it updates the repository URL on the Blackboard and triggers a refresh of the
+ * 
+ * @author babaldeep and yaneli
  */
 
 public class URLPanel extends JPanel implements ActionListener {
@@ -41,7 +44,7 @@ public class URLPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String url = urlField.getText();
-        Blackboard.getInstance().setRepoURL(url);
+        Blackboard.getInstance().setRepoPath(url);
         System.out.println("URL: " + url);
     }
 }
