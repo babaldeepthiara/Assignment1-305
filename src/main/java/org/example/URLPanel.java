@@ -6,8 +6,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * @author babaldeep and yaniel
+ * Panel that allows the user to input a repository URL and displays the selected file name.
+ * On clicking OK, it updates the repository URL on the Blackboard and triggers a refresh of the
+ *
+ * @author babaldeep and yaneli
+ * @version 1.0
  */
+
+
+// TO SEE THE NAMES OF THE FILES AFTER UPLOADING THE GITHUB LINK, CLICK ON A SQUARE AND LOOK AT THE BOTTOM OF THE WINDOW.
+// OR YOU CAN HOVER YOUR MOUSE OVER THE SQUARES TO SEE THE FILE NAMES AND # OF LINES IN THE FILE.
+// I used the following github repository to test the application: https://github.com/javiergs/TULIP
 
 public class URLPanel extends JPanel implements ActionListener {
 
@@ -41,7 +50,7 @@ public class URLPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String url = urlField.getText();
-        Blackboard.getInstance().setRepoURL(url);
+        Blackboard.getInstance().setRepoPath(url);
         System.out.println("URL: " + url);
     }
 }
