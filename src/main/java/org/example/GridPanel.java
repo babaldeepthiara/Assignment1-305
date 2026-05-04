@@ -5,18 +5,9 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Displays a grid of Squares, one per source file.
- * Implements RepoLoadedListener to refresh automatically when new files are loaded.
- *
  * @author babaldeep and yaneli
- * @version 1.0
+ * @version 2.0
  */
-
-
-// TO SEE THE NAMES OF THE FILES AFTER UPLOADING THE GITHUB LINK, CLICK ON A SQUARE AND LOOK AT THE BOTTOM OF THE WINDOW.
-// OR YOU CAN HOVER YOUR MOUSE OVER THE SQUARES TO SEE THE FILE NAMES AND # OF LINES IN THE FILE.
-// I used the following github repository to test the application: https://github.com/javiergs/TULIP
-
 public class GridPanel extends JPanel implements RepoLoadedListener {
 
     public GridPanel() {
@@ -32,21 +23,26 @@ public class GridPanel extends JPanel implements RepoLoadedListener {
 
     public void refreshSquares() {
         removeAll();
+
         List<SourceFileInfo> files = Blackboard.getInstance().getFiles();
-        double average = calculateAverage(files);
+
+        int maxLoc = getMaxLoc(files);
+
         for (SourceFileInfo file : files) {
-            add(new Square(file, average));
+            add(new Square(file, maxLoc));
         }
+
         revalidate();
         repaint();
     }
 
-    private double calculateAverage(List<SourceFileInfo> files) {
-        if (files.isEmpty()) return 0;
-        int total = 0;
+    private int getMaxLoc(List<SourceFileInfo> files) {
+        int max = 0;
         for (SourceFileInfo file : files) {
-            total += file.getLineCount();
+            if (file.getLoc() > max) {
+                max = file.getLoc();
+            }
         }
-        return (double) total / files.size();
+        return max == 0 ? 1 : max; // avoid division by 0
     }
 }
