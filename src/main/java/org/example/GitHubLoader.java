@@ -1,52 +1,52 @@
 package org.example;
-
 import javiergs.tulip.github.GitHubHandler;
 import javiergs.tulip.github.URLFactory;
 import javiergs.tulip.github.URLObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fetches and parses source files from a public GitHub repository.
- * Uses the TULIP library to handle all GitHub API communication and file retrieval.
+ * Fetches java source files from a public GitHub repository using the TULIP library.
+ * After retrieval, delegates all metric computation to metrics calculator.
+ * Updates blackboard status bar during loading to inform the UI.
  *
- * @author babaldeep and yaneli 
- * @version 1.0
+ * @author babaldeep and yaneli
+ * @version 2.0
+ * 
  */
-
-
-// TO SEE THE NAMES OF THE FILES AFTER UPLOADING THE GITHUB LINK, CLICK ON A SQUARE AND LOOK AT THE BOTTOM OF THE WINDOW. 
-// OR YOU CAN HOVER YOUR MOUSE OVER THE SQUARES TO SEE THE FILE NAMES AND # OF LINES IN THE FILE.
-// I used the following github repository to test the application: https://github.com/javiergs/TULIP
 
 public class GitHubLoader {
 
     private final GitHubHandler handler;
+    private final MetricsCalculator calculator;
 
     public GitHubLoader() {
         handler = new GitHubHandler();
+        calculator = new MetricsCalculator();
     }
 
     public List<SourceFileInfo> loadFiles(String repoUrl) throws Exception {
+        Blackboard bb = Blackboard.getInstance();
+        bb.setStatusMessage("Fetching repository…");
+
         URLObject u = URLFactory.parseGitHubUrl(repoUrl);
-        List<String> allPaths = handler.listFilesRecursive(repoUrl);
+        List<String> allPaths = handler.listFilesRecursive(u.owner, u.repository, u.revision, u.path);
         List<SourceFileInfo> result = new ArrayList<>();
 
+        int total = 0;
         for (String path : allPaths) {
-            if (path.endsWith(".java")) {
-                String content = handler.getFileContent(u.owner, u.repository, path, u.revision);
-                int lineCount = countLines(content);
-                String fileName = extractFileName(path);
-                result.add(new SourceFileInfo(fileName, path, lineCount));
-            }
+            if (!path.endsWith(".java")) continue;
+            String content = handler.getFileContent(u.owner, u.repository, path, u.revision);
+            String fileName = extractFileName(path);
+            result.add(new SourceFileInfo(fileName, path, content));
+            total++;
+            bb.setStatusMessage("Fetching files… (" + total + " found)");
         }
-        return result;
-    }
 
-    private int countLines(String content) {
-        if (content == null || content.isEmpty()) return 0;
-        return content.split("\n", -1).length;
+        bb.setStatusMessage("Analyzing files…");
+        calculator.computeAll(result);
+        bb.setStatusMessage(total + " file(s) processed.");
+        return result;
     }
 
     private String extractFileName(String path) {

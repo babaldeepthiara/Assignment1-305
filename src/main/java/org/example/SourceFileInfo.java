@@ -1,38 +1,54 @@
 package org.example;
 
 /**
- * Represents metadata for a single source file retrieved from a GitHub repository.
- * Acts as a plain data container with no logic or UI concerns.
+ * Immutable data container for a single .java source file's metadata and computed metrics.
+ * Holds LOC, CC, D, I, A values only.
  *
  * @author babaldeep and yaneli
- * @version 1.0
+ * @version 2.0
+ * 
  */
 
-
-// TO SEE THE NAMES OF THE FILES AFTER UPLOADING THE GITHUB LINK, CLICK ON A SQUARE AND LOOK AT THE BOTTOM OF THE WINDOW. 
-// OR YOU CAN HOVER YOUR MOUSE OVER THE SQUARES TO SEE THE FILE NAMES AND # OF LINES IN THE FILE.
-// I used the following github repository to test the application: https://github.com/javiergs/TULIP
-
 public class SourceFileInfo {
+
     private final String fileName;
     private final String filePath;
-    private final int lineCount;
+    private final String content;
+    private int loc;
+    private int cc;
+    private double instability;
+    private double abstractness;
+    private double distance;
 
-    public SourceFileInfo(String fileName, String filePath, int lineCount) {
+    public SourceFileInfo(String fileName, String filePath, String content) {
         this.fileName = fileName;
         this.filePath = filePath;
-        this.lineCount = lineCount;
+        this.content = content;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
+    public String getFileName() { return fileName; }
 
-    public String getFilePath() {
-        return filePath;
-    }
+    public String getFilePath() { return filePath; }
 
-    public int getLineCount() {
-        return lineCount;
-    }
+    public String getContent() { return content; }
+
+    public int getLoc() { return loc; }
+
+    public void setLoc(int loc) { this.loc = loc; }
+
+    public int getCc() { return cc; }
+
+    public void setCc(int cc) { this.cc = cc; }
+
+    public double getInstability() { return instability; }
+
+    public void setInstability(double instability) { this.instability = instability; }
+
+    public double getAbstractness() { return abstractness; }
+
+    public void setAbstractness(double abstractness) { this.abstractness = abstractness; }
+
+    public double getDistance() { return distance; }
+
+    public void setDistance(double distance) { this.distance = distance; }
 }
