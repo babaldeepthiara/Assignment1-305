@@ -1,32 +1,41 @@
 package org.example;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 /**
+ * Displays a scrollable grid of square components, one per source file.
+ * Implements app observer and reacts only to reloaded app events,
+ * ensuring that file-selection events do not trigger an unnecessary grid rebuild.
+ *
  * @author babaldeep and yaneli
  * @version 2.0
+ *
  */
-public class GridPanel extends JPanel implements RepoLoadedListener {
+
+public class GridPanel extends JPanel implements AppObserver {
+
+    private static final int COLUMNS = 5;
 
     public GridPanel() {
-        setLayout(new GridLayout(0, 5, 10, 10));
+        setLayout(new GridLayout(0, COLUMNS, 10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        Blackboard.getInstance().addRepoLoadedListener(this);
+        Blackboard.getInstance().addObserver(this);
     }
 
     @Override
-    public void onRepoLoaded() {
-        refreshSquares();
+    public void onEvent(AppEvent event) {
+        if (event == AppEvent.REPO_LOADED) {
+            refreshSquares();
+        }
     }
 
-    public void refreshSquares() {
+    private void refreshSquares() {
         removeAll();
 
+        Square.clearSelection();
         List<SourceFileInfo> files = Blackboard.getInstance().getFiles();
-
-        int maxLoc = getMaxLoc(files);
+        int maxLoc = files.stream().mapToInt(SourceFileInfo::getLoc).max().orElse(1);
 
         for (SourceFileInfo file : files) {
             add(new Square(file, maxLoc));
@@ -34,15 +43,5 @@ public class GridPanel extends JPanel implements RepoLoadedListener {
 
         revalidate();
         repaint();
-    }
-
-    private int getMaxLoc(List<SourceFileInfo> files) {
-        int max = 0;
-        for (SourceFileInfo file : files) {
-            if (file.getLoc() > max) {
-                max = file.getLoc();
-            }
-        }
-        return max == 0 ? 1 : max; // avoid division by 0
     }
 }

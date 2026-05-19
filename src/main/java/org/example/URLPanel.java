@@ -50,7 +50,7 @@ public class URLPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String url = urlField.getText();
-        Blackboard.getInstance().setRepoPath(url);
+        Blackboard.getInstance().setRepoUrl(url);
         System.out.println("URL: " + url);
     }
 }

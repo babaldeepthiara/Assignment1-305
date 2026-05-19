@@ -2,125 +2,199 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
- * Assembles and displays the GUI components.
- * Uses private helper methods to keep the constructor clean.
+ * Main application window.
  *
  * @author babaldeep and yaneli
- * @version 1.0
+ * @version 3.0
  */
 
+public class MainFrame extends JFrame {
 
-// TO SEE THE NAMES OF THE FILES AFTER UPLOADING THE GITHUB LINK, CLICK ON A SQUARE AND LOOK AT THE BOTTOM OF THE WINDOW.
-// OR YOU CAN HOVER YOUR MOUSE OVER THE SQUARES TO SEE THE FILE NAMES AND # OF LINES IN THE FILE.
-// I used the following GitHub repository to test the application: https://github.com/javiergs/TULIP
-
-public class MainFrame extends JFrame implements RepoLoadedListener {
-
-    private JLabel statusBar;
+    private GridPanel gridPanel;
 
     public MainFrame() {
-        super("Assignment 01");
+
+        super("Assignment 03");
         buildGUI();
-        Blackboard.getInstance().addRepoLoadedListener(this);
     }
 
     private void buildGUI() {
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(900, 650);
+        setSize(1100, 700);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout());
 
         setJMenuBar(buildMenuBar());
-        add(buildGridArea(), BorderLayout.CENTER);
-        add(buildStatusBar(), BorderLayout.SOUTH);
+
+        TreePanel treePanel = new TreePanel();
+
+        JTabbedPane tabs = new JTabbedPane();
+
+        gridPanel = new GridPanel();
+
+        tabs.addTab(
+                "Grid",
+                new JScrollPane(gridPanel)
+        );
+
+        tabs.addTab(
+                "Metrics",
+                new JPanel()
+        );
+
+        tabs.addTab(
+                "Diagram",
+                new JPanel()
+        );
+
+        JSplitPane splitPane = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                treePanel,
+                tabs
+        );
+
+        splitPane.setDividerLocation(250);
+
+        add(splitPane, BorderLayout.CENTER);
+
+        add(new StatusBar(), BorderLayout.SOUTH);
     }
 
     private JMenuBar buildMenuBar() {
+
         JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem openItem = new JMenuItem("Open");
-        openItem.addActionListener(e -> promptForRepoUrl());
-        fileMenu.add(openItem);
-        menuBar.add(fileMenu);
+
+        menuBar.add(buildFileMenu());
+        menuBar.add(buildActionMenu());
+
         return menuBar;
     }
 
-    private JScrollPane buildGridArea() {
-        GridPanel gridPanel = new GridPanel();
-        Blackboard.getInstance().setGridPanel(gridPanel);
-        return new JScrollPane(gridPanel);
+    private JMenu buildFileMenu() {
+
+        JMenu menu = new JMenu("File");
+
+        JMenuItem openItem =
+                new JMenuItem("Open from URL");
+
+        openItem.addActionListener(
+                e -> promptForRepoUrl()
+        );
+
+        JMenuItem exitItem =
+                new JMenuItem("Exit");
+
+        exitItem.addActionListener(
+                e -> System.exit(0)
+        );
+
+        menu.add(openItem);
+        menu.addSeparator();
+        menu.add(exitItem);
+
+        return menu;
     }
 
-    private JPanel buildStatusBar() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-        JLabel label = new JLabel("Selected File Name: ");
-        statusBar = new JLabel("");
-        panel.add(label, BorderLayout.WEST);
-        panel.add(statusBar, BorderLayout.CENTER);
-        return panel;
+    private JMenu buildActionMenu() {
+
+        JMenu menu = new JMenu("Action");
+
+        JMenuItem reloadItem =
+                new JMenuItem("Reload");
+
+        reloadItem.addActionListener(e -> {
+
+            String url =
+                    Blackboard.getInstance().getRepoUrl();
+
+            if (url != null && !url.isBlank()) {
+                loadRepoInBackground(url);
+            }
+        });
+
+        JMenuItem clearItem =
+                new JMenuItem("Clear");
+
+        clearItem.addActionListener(e -> {
+
+            Blackboard.getInstance().setFiles(
+                    new java.util.ArrayList<>()
+            );
+
+            Blackboard.getInstance()
+                    .setSelectedFileName("");
+
+            Blackboard.getInstance()
+                    .setStatusMessage("Cleared.");
+        });
+
+        menu.add(reloadItem);
+        menu.add(clearItem);
+
+        return menu;
     }
 
     private void promptForRepoUrl() {
+
         String url = JOptionPane.showInputDialog(
                 this,
-                "Enter GitHub Repository URL:",
-                "Open Repository",
-                JOptionPane.PLAIN_MESSAGE
+                "Enter GitHub Repository URL:"
         );
-        if (url == null || url.trim().isEmpty()) {
+
+        if (url == null || url.isBlank()) {
             return;
         }
-        if (!url.trim().startsWith("https://github.com/")) {
-            JOptionPane.showMessageDialog(this,
-                    "Please enter a valid GitHub repository URL.\nExample: https://github.com/owner/repo",
-                    "Invalid URL",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        String[] parts = url.trim().replace("https://github.com/", "").split("/");
-        if (parts.length < 2 || parts[0].isBlank() || parts[1].isBlank()) {
-            JOptionPane.showMessageDialog(this,
-                    "URL must include both an owner and a repository name.\nExample: https://github.com/owner/repo",
-                    "Invalid URL",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        Blackboard.getInstance().setRepoPath(url.trim());
-        loadRepoInBackground(url.trim());
+
+        Blackboard.getInstance().setRepoUrl(url);
+
+        loadRepoInBackground(url);
     }
 
     private void loadRepoInBackground(String url) {
-        SwingWorker<java.util.List<SourceFileInfo>, Void> worker = new SwingWorker<>() {
-            @Override
-            protected java.util.List<SourceFileInfo> doInBackground() throws Exception {
-                GitHubLoader loader = new GitHubLoader();
-                return loader.loadFiles(url);
-            }
 
-            @Override
-            protected void done() {
-                try {
-                    java.util.List<SourceFileInfo> files = get();
-                    Calculator calculator = new Calculator();
-                    calculator.computeMetrics(files);
-                    Blackboard.getInstance().setFiles(files);
-                    Blackboard.getInstance().notifyRepoLoaded();
+        SwingWorker<List<SourceFileInfo>, Void> worker =
+                new SwingWorker<>() {
 
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(MainFrame.this,
-                            "Failed to load repository:\n" + ex.getMessage(),
-                            "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        };
+                    @Override
+                    protected List<SourceFileInfo>
+                    doInBackground() throws Exception {
+
+                        GitHubLoader loader =
+                                new GitHubLoader();
+
+                        return loader.loadFiles(url);
+                    }
+
+                    @Override
+                    protected void done() {
+
+                        try {
+
+                            Blackboard.getInstance()
+                                    .setFiles(get());
+                        }
+
+                        catch (Exception ex) {
+
+                            Blackboard.getInstance()
+                                    .setStatusMessage(
+                                            "Error loading repository."
+                                    );
+
+                            JOptionPane.showMessageDialog(
+                                    MainFrame.this,
+                                    ex.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    }
+                };
+
         worker.execute();
-    }
-
-    @Override
-    public void onRepoLoaded() {
-        statusBar.setText(Blackboard.getInstance().getSelectedFileName());
     }
 }
