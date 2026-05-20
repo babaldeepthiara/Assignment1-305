@@ -8,8 +8,8 @@ import java.awt.*;
  *
  *
  * @author babaldeep and yaneli
- * @version 2.0
- * 
+ * @version 3.0
+ *
  */
 
 public class Square extends JButton {
@@ -20,7 +20,6 @@ public class Square extends JButton {
 
     private static final LineBorder DEFAULT_BORDER  = new LineBorder(Color.DARK_GRAY, 1);
     private static final LineBorder SELECTED_BORDER = new LineBorder(Color.BLUE, 3);
-    
     private static Square currentlySelected = null;
     private final SourceFileInfo fileInfo;
 
@@ -45,13 +44,15 @@ public class Square extends JButton {
 
     private void initTooltip() {
         String tip = String.format(
-            "<html><b>%s</b><br>LOC: %d<br>CC: %d<br>D: %.2f<br>I: %.2f<br>A: %.0f</html>",
-            fileInfo.getFileName(),
-            fileInfo.getLoc(),
-            fileInfo.getCc(),
-            fileInfo.getDistance(),
-            fileInfo.getInstability(),
-            fileInfo.getAbstractness()
+                "<html><b>%s</b><br>LOC: %d<br>CC: %d<br>Ca: %d<br>Ce: %d<br>I: %.2f<br>A: %.0f<br>D: %.2f</html>",
+                fileInfo.getFileName(),
+                fileInfo.getLoc(),
+                fileInfo.getCc(),
+                fileInfo.getCa(),
+                fileInfo.getCe(),
+                fileInfo.getInstability(),
+                fileInfo.getAbstractness(),
+                fileInfo.getDistance()
         );
 
         setToolTipText(tip);
@@ -73,7 +74,7 @@ public class Square extends JButton {
     protected void paintComponent(Graphics g) {
         int maxLoc = computeMaxLoc();
         int alpha = maxLoc == 0 ? 255
-            : (int) Math.round(80 + 175.0 * fileInfo.getLoc() / maxLoc);
+                : (int) Math.round(80 + 175.0 * fileInfo.getLoc() / maxLoc);
         alpha = Math.min(255, Math.max(0, alpha));
 
         Color base = baseColor();
@@ -96,8 +97,8 @@ public class Square extends JButton {
 
     private int computeMaxLoc() {
         return Blackboard.getInstance().getFiles().stream()
-            .mapToInt(SourceFileInfo::getLoc)
-            .max()
-            .orElse(1);
+                .mapToInt(SourceFileInfo::getLoc)
+                .max()
+                .orElse(1);
     }
 }

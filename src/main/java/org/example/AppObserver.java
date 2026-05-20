@@ -6,8 +6,8 @@ package org.example;
  * preventing unnecessary refreshes (e.g., file selection must not rebuild the grid).
  *
  * @author babaldeep and yaneli
- * @version 2.0
- * 
+ * @version 3.0
+ *
  */
 
 public interface AppObserver {

@@ -9,8 +9,8 @@ import java.util.List;
  * ensuring that file-selection events do not trigger an unnecessary grid rebuild.
  *
  * @author babaldeep and yaneli
- * @version 2.0
- * 
+ * @version 3.0
+ *
  */
 
 public class GridPanel extends JPanel implements AppObserver {
@@ -32,7 +32,6 @@ public class GridPanel extends JPanel implements AppObserver {
 
     private void refreshSquares() {
         removeAll();
-        
         Square.clearSelection();
         List<SourceFileInfo> files = Blackboard.getInstance().getFiles();
         int maxLoc = files.stream().mapToInt(SourceFileInfo::getLoc).max().orElse(1);

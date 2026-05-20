@@ -4,13 +4,10 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Main application window titled "Assignment 02".
- * Assembles the menu bar, grid area, and status bar.
- * Runs GitHub loading on a background thread to keep the UI responsive.
+ * Main application window.
  *
  * @author babaldeep and yaneli
- * @version 2.0
- * 
+ * @version 3.0
  */
 
 public class MainFrame extends JFrame {
@@ -18,21 +15,30 @@ public class MainFrame extends JFrame {
     private GridPanel gridPanel;
 
     public MainFrame() {
-        super("Assignment 02");
+        super("Assignment 03");
         buildGUI();
     }
 
     private void buildGUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(900, 650);
+        setSize(1100, 700);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(0, 0));
+        setLayout(new BorderLayout());
 
         setJMenuBar(buildMenuBar());
 
+        TreePanel treePanel = new TreePanel();
+        JTabbedPane tabs = new JTabbedPane();
         gridPanel = new GridPanel();
-        JScrollPane scrollPane = new JScrollPane(gridPanel);
-        add(scrollPane, BorderLayout.CENTER);
+
+        tabs.addTab("Grid", new JScrollPane(gridPanel));
+        tabs.addTab("Metrics", new MetricsTab());
+        tabs.addTab("Diagram", new DiagramTab());
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel, tabs);
+        splitPane.setDividerLocation(250);
+
+        add(splitPane, BorderLayout.CENTER);
         add(new StatusBar(), BorderLayout.SOUTH);
     }
 
@@ -47,7 +53,7 @@ public class MainFrame extends JFrame {
     private JMenu buildFileMenu() {
         JMenu menu = new JMenu("File");
 
-        JMenuItem openItem = new JMenuItem("Open from URL…");
+        JMenuItem openItem = new JMenuItem("Open from URL");
         openItem.addActionListener(e -> promptForRepoUrl());
 
         JMenuItem exitItem = new JMenuItem("Exit");
@@ -65,13 +71,7 @@ public class MainFrame extends JFrame {
         JMenuItem reloadItem = new JMenuItem("Reload");
         reloadItem.addActionListener(e -> {
             String url = Blackboard.getInstance().getRepoUrl();
-            if (url == null || url.isBlank()) {
-                JOptionPane.showMessageDialog(this,
-                    "No repository loaded. Use File → Open from URL… first.",
-                    "Nothing to Reload", JOptionPane.INFORMATION_MESSAGE);
-            } 
-            
-            else {
+            if (url != null && !url.isBlank()) {
                 loadRepoInBackground(url);
             }
         });
@@ -92,76 +92,48 @@ public class MainFrame extends JFrame {
         JMenu menu = new JMenu("Help");
 
         JMenuItem aboutItem = new JMenuItem("About");
-        aboutItem.addActionListener(e -> JOptionPane.showMessageDialog(this,
-            "Assignment 02 – GitHub Repository Analyzer\n"
-            + "Authors: babaldeep and yaneli\n"
-            + "Version: 2.0\n\n"
-            + "Color legend:\n"
-            + "  Green  – CC < 5\n"
-            + "  Yellow – CC 5–9\n"
-            + "  Red    – CC ≥ 10\n"
-            + "Transparency scales with LOC (more opaque = more lines).",
-            "About", JOptionPane.INFORMATION_MESSAGE));
+        aboutItem.addActionListener(e ->
+                JOptionPane.showMessageDialog(
+                        this,
+                        "<html><b>GitHub Repository Analyzer</b><br>" +
+                        "Version 3.0<br><br>" +
+                        "Authors: babaldeep and yaneli<br><br>" +
+                        "Fetches Java source files from a public GitHub<br>" +
+                        "repository and visualizes software design metrics.</html>",
+                        "About",
+                        JOptionPane.INFORMATION_MESSAGE
+                )
+        );
 
         menu.add(aboutItem);
         return menu;
     }
 
     private void promptForRepoUrl() {
-        String url = JOptionPane.showInputDialog(
-            this,
-            "Enter GitHub Repository URL:",
-            "Open from URL",
-            JOptionPane.PLAIN_MESSAGE
-        );
-        if (url == null || url.trim().isEmpty()) return;
-
-        url = url.trim();
-
-        if (!url.startsWith("https://github.com/")) {
-            JOptionPane.showMessageDialog(this,
-                "Please enter a valid GitHub repository URL.\n"
-                + "Example: https://github.com/owner/repo",
-                "Invalid URL", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        String[] parts = url.replace("https://github.com/", "").split("/");
-        if (parts.length < 2 || parts[0].isBlank() || parts[1].isBlank()) {
-            JOptionPane.showMessageDialog(this,
-                "URL must include both an owner and a repository name.\n"
-                + "Example: https://github.com/owner/repo",
-                "Invalid URL", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
+        String url = JOptionPane.showInputDialog(this, "Enter GitHub Repository URL:");
+        if (url == null || url.isBlank()) return;
         Blackboard.getInstance().setRepoUrl(url);
         loadRepoInBackground(url);
     }
 
     private void loadRepoInBackground(String url) {
         SwingWorker<List<SourceFileInfo>, Void> worker = new SwingWorker<>() {
+
             @Override
             protected List<SourceFileInfo> doInBackground() throws Exception {
-                GitHubLoader loader = new GitHubLoader();
-                return loader.loadFiles(url);
+                return new GitHubLoader().loadFiles(url);
             }
 
             @Override
             protected void done() {
                 try {
                     Blackboard.getInstance().setFiles(get());
-                } 
-                
-                catch (Exception ex) {
-                    Blackboard.getInstance().setStatusMessage("Error: " + ex.getMessage());
-                    JOptionPane.showMessageDialog(MainFrame.this,
-                        "Failed to load repository:\n" + ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    Blackboard.getInstance().setStatusMessage("Error loading repository.");
+                    JOptionPane.showMessageDialog(MainFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
-
         worker.execute();
     }
 }

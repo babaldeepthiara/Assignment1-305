@@ -8,8 +8,8 @@ import java.util.List;
  * Notifies registered app observers with typed app events.
  *
  * @author babaldeep and yaneli
- * @version 2.0
- * 
+ * @version 3.0
+ *
  */
 
 public class Blackboard {
@@ -33,12 +33,12 @@ public class Blackboard {
         return INSTANCE;
     }
 
-    public String getRepoUrl() { 
-        return repoUrl; 
+    public String getRepoUrl() {
+        return repoUrl;
     }
 
-    public void setRepoUrl(String repoUrl) { 
-        this.repoUrl = repoUrl; 
+    public void setRepoUrl(String repoUrl) {
+        this.repoUrl = repoUrl;
     }
 
     public String getSelectedFileName() { 
@@ -50,8 +50,8 @@ public class Blackboard {
         notify(AppEvent.FILE_SELECTED);
     }
 
-    public String getStatusMessage() { 
-        return statusMessage; 
+    public String getStatusMessage() {
+        return statusMessage;
     }
 
     public void setStatusMessage(String statusMessage) {

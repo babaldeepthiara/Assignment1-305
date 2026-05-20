@@ -11,8 +11,8 @@ import java.util.List;
  * Updates blackboard status bar during loading to inform the UI.
  *
  * @author babaldeep and yaneli
- * @version 2.0
- * 
+ * @version 3.0
+ *
  */
 
 public class GitHubLoader {
